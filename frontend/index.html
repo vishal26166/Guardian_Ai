@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Guardian AI</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .box {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      display: inline-block;
+      min-width: 250px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🚨 Guardian AI Dashboard</h1>
+
+  <button onclick="sendLocation()">📍 Send Location</button>
+
+  <div class="box">
+    <p><b>Risk:</b> <span id="risk">-</span></p>
+    <p><b>Alert:</b> <span id="alert">-</span></p>
+    <p><b>Notification:</b> <span id="notification">-</span></p>
+    <p><b>Latitude:</b> <span id="lat">-</span></p>
+    <p><b>Longitude:</b> <span id="lng">-</span></p>
+  </div>
+
+  <script>
+    function sendLocation() {
+      console.log("Button clicked 🚀");
+
+      // Step 1: Check support
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported ❌");
+        return;
+      }
+
+      // Step 2: Get real location
+      navigator.geolocation.getCurrentPosition(async function(position) {
+
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        console.log("Live Location:", latitude, longitude);
+
+        try {
+          const response = await fetch("http://localhost:5000/api/location/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              userId: "69e13b913c72d1e3a454766b",
+              latitude: latitude,
+              longitude: longitude
+            })
+          });
+
+          const data = await response.json();
+          console.log("Data:", data);
+
+          // Update UI
+          document.getElementById("risk").innerText = data.risk?.status || "Error";
+
+          document.getElementById("alert").innerText =
+            data.alert ? "🚨 Alert Triggered" : "No Alert";
+
+          document.getElementById("notification").innerText =
+            data.notification || "No Notification";
+
+          document.getElementById("lat").innerText = latitude;
+          document.getElementById("lng").innerText = longitude;
+
+        } catch (error) {
+          console.error("ERROR:", error);
+
+          document.getElementById("risk").innerText = "Error ❌";
+          document.getElementById("alert").innerText = "Error ❌";
+          document.getElementById("notification").innerText = "Check console";
+        }
+
+      }, function(error) {
+        alert("Please allow location access ⚠️");
+        console.log(error);
+      });
+    }
+  </script>
+
+</body>
+</html>
